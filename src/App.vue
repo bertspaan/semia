@@ -49,7 +49,7 @@ export default {
   },
   methods: {
     onSpace: function () {
-      console.log('Space!')
+      // console.log('Space!')
     }
   }
 }
