@@ -16,7 +16,7 @@
           </router-link>
         </li>
       </ol>
-      <template v-if="false && currentShot">
+      <template v-if="currentShot">
         <ul class="similar">
           <li v-for="(data, attribute) in currentShot.similar" :key="attribute">
             {{ attribute }}:
