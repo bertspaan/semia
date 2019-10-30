@@ -2,35 +2,49 @@
   <header>
     <div class="container">
       <h1>
-        <span v-for="color in colors.slice(0, 3)"
-          :key="color" class="color"
-          :style="{
-            backgroundColor: color
-          }" />
         <span class="text">SEMIA</span>
-        <span v-for="color in colors.slice(3)"
-          :key="color" class="color"
-          :style="{
-            backgroundColor: color
-          }" />
       </h1>
+      <input type="text" v-model="query">
+      <template v-if="searchResults.length && !$route.params.videoId">
+        <SearchResults :data="searchResults" />
+      </template>
     </div>
   </header>
 </template>
 
 <script>
+import axios from 'axios'
+import { throttle } from 'lodash'
+
+import SearchResults from './SearchResults'
 
 export default {
+  components: {
+    SearchResults
+  },
   data: function () {
     return {
-      colors: [
-        '#dee100',
-        '#00e4e1',
-        '#00e500',
-        '#f400e7',
-        '#f20001',
-        '#2b00e7'
-      ]
+      query: '',
+      searchResults: []
+    }
+  },
+  methods: {
+    throttledSearch: throttle(async function (query) {
+      if (query.length <= 2) {
+        this.searchResults = []
+        return
+      }
+
+      const url = `https://semia-api.glitch.me/search?q=${query}`
+      const response = await axios.get(url)
+      const results = response.data
+
+      this.searchResults = results
+    }, 500)
+  },
+  watch: {
+    query: function (query) {
+      this.throttledSearch(query)
     }
   }
 }
@@ -47,7 +61,7 @@ header {
   flex-direction: row;
   padding: 10px;
   box-sizing: border-box;
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 
 .container {

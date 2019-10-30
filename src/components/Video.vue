@@ -16,6 +16,7 @@
           </router-link>
         </li>
       </ol>
+      <VideoInfo :data="videoData" />
       <template v-if="currentShot">
         <ul class="similar">
           <li v-for="(data, attribute) in currentShot.similar" :key="attribute">
@@ -37,10 +38,14 @@
 <script>
 import axios from 'axios'
 
-// gaat fout bij
-// http://localhost:8080/#/video/98168/shot/7
+import VideoInfo from './VideoInfo'
+import Timeline from './Timeline'
+import SimilarShots from './SimilarShots'
 
 export default {
+  components: {
+    VideoInfo
+  },
   props: {
     apiUrl: String,
     thumbUrl: String,
@@ -83,11 +88,12 @@ export default {
           shotId: 0
         }})
       } else {
-        const currentTime = this.$refs.video.currentTime
+        const video = this.$refs.video
+        const currentTime = video.currentTime
         const newShotId = this.findClosestShot(currentTime)
         if (newShotId !== shotId) {
-          this.$refs.video.currentTime = this.videoData.shots[shotId].start
-          this.$refs.video.play()
+          video.currentTime = this.videoData.shots[shotId].start
+          video.play()
         }
       }
     },
@@ -190,8 +196,10 @@ export default {
       }
     },
     toShot: function (start) {
-      this.$refs.video.currentTime = start
-      this.$refs.video.play()
+      const video = this.$refs.video
+
+      video.currentTime = start
+      video.play()
     },
     percentageInShot: function (start, end, currentTime) {
       if (currentTime < start) {
@@ -206,6 +214,12 @@ export default {
   mounted: function () {
     this.loadVideo()
     this.getVideoData(this.videoId)
+  },
+  beforeDestroy: function () {
+    const video = this.$refs.video
+    video.pause()
+    video.removeAttribute('src')
+    video.load()
   }
 }
 </script>

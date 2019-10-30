@@ -1,5 +1,5 @@
 <template>
-  <div id="app" v-on:keyup.space="onSpace">
+  <div id="app">
     <Header />
     <Grid :tileUrl="config.tileUrl" :gridUrl="config.gridUrl"
       :dimensions="config.gridDimensions" />
@@ -42,14 +42,20 @@ export default {
     Modal,
     Footer
   },
+  created() {
+    window.addEventListener('keydown', (event) => {
+      if (event.key === ' ') {
+        console.log('Pause video!')
+      } else if (event.key === 'Escape' && this.$route.params.videoId) {
+        this.$router.push({
+          name: 'main'
+        })
+      }
+    })
+  },
   data: function() {
     return {
       config
-    }
-  },
-  methods: {
-    onSpace: function () {
-      // console.log('Space!')
     }
   }
 }

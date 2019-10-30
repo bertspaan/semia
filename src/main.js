@@ -19,7 +19,6 @@ const router = new VueRouter({
       component: App
     },
     {
-      title: 'beer',
       name: 'shot',
       path: '/video/:videoId/shot/:shotId',
       component: App

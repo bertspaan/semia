@@ -1,5 +1,6 @@
 <template>
-  <div class="modal">
+  <div class="modal" ref="modal"
+    v-on:click="close">
     <div class="container">
       <router-link :to="{ name: 'main' }">
         Close
@@ -10,7 +11,17 @@
 </template>
 <script>
 
-export default {}
+export default {
+  methods: {
+    close: function (event) {
+      if (event.target === this.$refs.modal) {
+        this.$router.push({
+          name: 'main'
+        })
+      }
+    }
+  }
+}
 </script>
 
 <style scoped>
