@@ -8,7 +8,7 @@
         <Video
           :apiUrl="config.apiUrl" :thumbUrl="config.thumbUrl"
           :videoId="parseInt($route.params.videoId)"
-          :shotId="parseInt($route.params.shotId)" />
+          :shotId="parseInt($route.params.shotId || 0)" />
       </Modal>
     </template>
     <Footer />

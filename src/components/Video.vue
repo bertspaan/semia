@@ -22,7 +22,7 @@
           <li v-for="(data, attribute) in currentShot.similar" :key="attribute">
             {{ attribute }}:
             <ol>
-              <li v-for="([videoId, shotId]) in data" :key="videoId + shotId">
+              <li v-for="([videoId, shotId]) in data" :key="`${videoId}_${shotId}`">
                 <router-link :to="{ name: 'shot', params: { videoId, shotId }}">
                   <img :src="`${thumbUrl}/${videoId}/${videoId}_${shotId}.png`" />
                 </router-link>
@@ -213,7 +213,6 @@ export default {
   },
   mounted: function () {
     this.loadVideo()
-    this.getVideoData(this.videoId)
   },
   beforeDestroy: function () {
     const video = this.$refs.video
@@ -259,6 +258,7 @@ export default {
 .similar {
   display: flex;
   list-style-type: none;
+  min-height: 200px;
 }
 
 .similar ol {
