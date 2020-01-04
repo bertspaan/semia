@@ -14,6 +14,16 @@ const router = new VueRouter({
       component: App
     },
     {
+      name: 'about',
+      path: '/about',
+      component: App
+    },
+    {
+      name: 'search',
+      path: '/search',
+      component: App
+    },
+    {
       name: 'video',
       path: '/video/:videoId',
       component: App

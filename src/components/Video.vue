@@ -1,37 +1,64 @@
 <template>
-  <div id="component">
-    <video :width="width" :height="height" controls @timeupdate="timeUpdate" ref="video">
+  <div v-if="videoData"
+    ref="video-container"
+    class="video-container">
+    <video @timeupdate="videoTimeUpdate"
+      @loadeddata="videoLoadedData"
+      ref="video" @click="$emit('update:playing', !playing)">
       <source type="video/mp4" :src="initialVideoUrl" />
     </video>
-    <template v-if="videoData && initialVideoUrl">
-      <ol class="shots">
-        <li v-for="(shot, shotId) in videoData.shots" :key="shotId"
-          :style="{
-            width: (shot.end - shot.start) / videoLength * width + 'px'
-          }">
-          <router-link :to="{ name: 'shot', params: { videoId, shotId }}">
-            <div class="shot-position" :style="{
-              width: percentageInShot(shot.start, shot.end, currentTime) * 100 + '%'
-            }"></div>
-          </router-link>
-        </li>
-      </ol>
-      <VideoInfo :data="videoData" />
-      <template v-if="currentShot">
-        <ul class="similar">
-          <li v-for="(data, attribute) in currentShot.similar" :key="attribute">
-            {{ attribute }}:
-            <ol>
-              <li v-for="([videoId, shotId]) in data" :key="`${videoId}_${shotId}`">
-                <router-link :to="{ name: 'shot', params: { videoId, shotId }}">
-                  <img :src="`${thumbUrl}/${videoId}/${videoId}_${shotId}.png`" />
-                </router-link>
-              </li>
-            </ol>
-          </li>
-        </ul>
-      </template>
-    </template>
+
+    <div class="overlay controls-centered padding play">
+      <transition name="play-fade">
+        <button title="Play video" v-if="!playing" @click="$emit('update:playing', true)">
+          <img src="../assets/play-circle.svg" />
+        </button>
+      </transition>
+    </div>
+
+    <div class="overlay controls-bottom padding">
+      <div class="space-between margin-bottom">
+        <div>
+          <template v-if="currentShot">
+            <SimilarShots :videoId="videoId" :shotId="shotId" class="no-overlay"
+              :similarityAttribute="similarityAttribute"
+              @update:similarityAttribute="$emit('update:similarityAttribute', $event)"
+              :thumbUrl="thumbUrl" :shots="currentShot.similar" />
+          </template>
+        </div>
+        <div class="buttons">
+          <template v-if="this.volume">
+            <button @click="toggleVolume" title="Turn volume off">
+              <img src="../assets/volume.svg" />
+            </button>
+          </template>
+          <template v-else>
+            <button @click="toggleVolume" title="Turn volume on">
+              <img src="../assets/volume-x.svg" />
+            </button>
+          </template>
+          <button @click="fullScreen" title="Watch video in full screen">
+            <img src="../assets/maximize.svg" />
+          </button>
+        </div>
+      </div>
+      <Timeline :shots="videoData.shots" :videoId="videoId" class="no-overlay"
+        :videoLength="videoLength" :currentTime="currentTime" />
+    </div>
+
+      <div class="overlay controls-top padding">
+      <div class="heading spacing">
+        <button @click="showInfo = !showInfo" title="Show video metadata">
+          <img src="../assets/info.svg" />
+        </button>
+        <h3 class="ellipsis" :title="videoData.title">{{ videoData.title }}</h3>
+      </div>
+        <VideoInfo v-if="showInfo && videoData"
+          :data="videoData" class="no-overlay" />
+    </div>
+  </div>
+  <div v-else class="padding centered">
+    <Loading class="loading" />
   </div>
 </template>
 
@@ -41,29 +68,38 @@ import axios from 'axios'
 import VideoInfo from './VideoInfo'
 import Timeline from './Timeline'
 import SimilarShots from './SimilarShots'
+import Loading from './Loading'
 
 export default {
   components: {
-    VideoInfo
+    VideoInfo,
+    Timeline,
+    SimilarShots,
+    Loading
   },
   props: {
     apiUrl: String,
     thumbUrl: String,
     videoId: Number,
-    shotId: Number
+    shotId: Number,
+    playing: Boolean,
+    volume: Number,
+    similarityAttribute: String
   },
   data: function () {
     return {
       videoData: undefined,
-      width: 512,
-      height: 288,
+      showInfo: false,
       videoUrl: undefined,
       initialVideoUrl: undefined,
       currentTime: undefined,
-      dataLoaded: false
+      videoLength: undefined
     }
   },
   watch: {
+    playing: function () {
+      this.setPlaying(this.playing)
+    },
     videoId: async function () {
       this.loadVideo()
     },
@@ -93,7 +129,9 @@ export default {
         const newShotId = this.findClosestShot(currentTime)
         if (newShotId !== shotId) {
           video.currentTime = this.videoData.shots[shotId].start
-          video.play()
+          if (this.playing) {
+            video.play()
+          }
         }
       }
     },
@@ -111,21 +149,20 @@ export default {
       }, 0)
 
       let currentTime = 0
-      if (this.shotId && this.shotId >= 0 && this.shotId < videoData.shots.length) {
+      if (this.shotId !== undefined && this.shotId >= 0 && this.shotId < videoData.shots.length) {
         currentTime = videoData.shots[this.shotId].start
       }
 
+      // A video from Open Beelden can be available in multiple formats
+      // In this app, we only use MP4s
       const mp4s = videoData.medium.filter((url) => url.endsWith('.mp4'))
 
+      // All videos have at least one MP4 video, but some can have more
+      // I don't remember why choosing [1] over [0] is better, to be honest...
       this.videoUrl = mp4s[1] || mp4s[0]
 
       this.currentTime = currentTime
       this.initialVideoUrl = `${this.videoUrl}#t=${currentTime}`
-      // this.loadVideo()
-
-      const video = this.$refs.video
-      video.load()
-      video.play()
     }
   },
   computed: {
@@ -140,13 +177,45 @@ export default {
     }
   },
   methods: {
+    videoLoadedData: function () {
+      this.setPlaying(this.playing)
+      this.setVolume(this.volume)
+    },
+    setVolume: function (volume) {
+      const video = this.$refs.video
+      if (video) {
+        video.volume = volume
+        this.$emit('update:volume', volume)
+      }
+    },
+    toggleVolume: function () {
+      const video = this.$refs.video
+      if (video) {
+        if (video.volume > 0) {
+          this.setVolume(0)
+        } else {
+          this.setVolume(1)
+        }
+      }
+    },
+    fullScreen: function () {
+      const video = this.$refs.video
+      if (video) {
+        if (video.requestFullscreen) {
+          video.requestFullscreen()
+        } else if (video.msRequestFullscreen) {
+          video.msRequestFullscreen()
+        } else if (video.mozRequestFullScreen) {
+          video.mozRequestFullScreen()
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen()
+        }
+      }
+    },
     loadVideo: async function () {
       if (this.videoDataInvalid()) {
         this.videoData = undefined
       }
-
-      const video = this.$refs.video
-      video.load()
 
       await this.getVideoData(this.videoId)
     },
@@ -167,15 +236,24 @@ export default {
       return false
     },
     getVideoData: async function (videoId) {
-      const url = `${this.apiUrl}/${videoId}`
+      const url = `${this.apiUrl}/videos/${videoId}`
 
       const response = await axios.get(url)
       this.videoData = response.data
-      this.dataLoaded = true
     },
-    timeUpdate: function () {
+    setPlaying: function (playing) {
       const video = this.$refs.video
-      if (video && video.currentTime) {
+      if (video) {
+        if (playing) {
+          video.play()
+        } else {
+          video.pause()
+        }
+      }
+    },
+    videoTimeUpdate: function () {
+      const video = this.$refs.video
+      if (video && video.currentTime !== undefined) {
         this.currentTime = video.currentTime
       }
 
@@ -186,7 +264,7 @@ export default {
         if (hasNextShot && timeBeyondCurrentShot) {
           const newShotId = this.findClosestShot(this.currentTime)
 
-          if (newShotId && newShotId !== this.shotId) {
+          if (newShotId !== undefined && newShotId !== this.shotId) {
             this.$router.push({ name: 'shot', params: {
               videoId: this.videoId,
               shotId: newShotId
@@ -199,15 +277,8 @@ export default {
       const video = this.$refs.video
 
       video.currentTime = start
-      video.play()
-    },
-    percentageInShot: function (start, end, currentTime) {
-      if (currentTime < start) {
-        return 0
-      } else if (currentTime > end) {
-        return 1
-      } else {
-        return (currentTime - start) / (end - start)
+      if (!this.paused) {
+        video.play()
       }
     }
   },
@@ -216,53 +287,108 @@ export default {
   },
   beforeDestroy: function () {
     const video = this.$refs.video
-    video.pause()
-    video.removeAttribute('src')
-    video.load()
+    if (video) {
+      const container = this.$refs['video-container']
+      container.style.display = 'none'
+      video.pause()
+      video.removeAttribute('src')
+      video.load()
+    }
   }
 }
 </script>
 
 <style scoped>
-.shots {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+.video-container {
   display: flex;
-  height: 2em;
 }
 
-.shots li {
-  padding: 0;
+.heading {
+  max-width: calc(100% - 40px);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.overlay {
+  pointer-events: none;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay button,
+.no-overlay {
+  pointer-events: all;
+}
+
+h3 {
   margin: 0;
-  /* border-color: rgba(255, 196, 0,0.7); */
-  /* border-width: 1px; */
-  /* border-style: solid; */
-  box-sizing: border-box;
+  color: white;
+  text-shadow:
+    0.07em 0 black,
+    0 0.07em black,
+    -0.07em 0 black,
+    0 -0.07em black;
 }
 
-.shots li:nth-child(odd) {
-  background-color: rgba(230, 230, 230, 1);
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.shots li:hover {
-  background-color: rgb(255, 196, 0);
-  /* border-width: 3px; */
-}
-
-.shot-position {
+.controls-centered {
+  width: 100%;
   height: 100%;
-  background-color: rgba(255, 0, 100, 0.8);
-}
-
-.similar {
+  position: absolute;
+  top: 0;
   display: flex;
-  list-style-type: none;
-  min-height: 200px;
+  align-items: center;
+  justify-content: center;
 }
 
-.similar ol {
-  list-style-type: none;
-  padding: 0;
+.play button {
+  transform: scale(3);
+}
+
+.play-fade-enter-active, .play-fade-leave-active {
+  transition: opacity .1s;
+}
+.play-fade-enter, .play-fade-leave-to {
+  opacity: 0;
+}
+
+.controls-top {
+  width: 100%;
+  position: absolute;
+  top: 0;
+}
+
+.space-between {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.margin-bottom {
+  margin-bottom: 5px;
+}
+
+video {
+  width: 100%;
+  max-height: 100%;
+  border-radius: 2px;
+}
+
+.controls-bottom {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+}
+
+.loading {
+  height: 432px;
 }
 </style>

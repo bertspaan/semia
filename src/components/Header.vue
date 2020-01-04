@@ -1,92 +1,101 @@
 <template>
-  <header>
-    <div class="container">
-      <h1>
-        <span class="text">SEMIA</span>
-      </h1>
-      <input type="text" v-model="query">
-      <template v-if="searchResults.length && !$route.params.videoId">
-        <SearchResults :data="searchResults" />
-      </template>
-    </div>
+  <header class="padding">
+      <div class="heading">
+        <h1>
+          <router-link :to="{ name: 'main' }" class="wide-h1">
+            The Sensory Moving Image Archive
+          </router-link>
+          <router-link :to="{ name: 'main' }" class="narrow-h1">
+            SEMIA
+          </router-link>
+        </h1>
+        <h2>
+          Boosting Creative Reuse for <br />
+          Artistic Practice and Research
+        </h2>
+      </div>
+      <div class="buttons">
+        <router-link tag="button" :to="{ name: $route.name === 'search' ? 'main' : 'search' }">
+          <img alt="Search" src="../assets/search.svg" />
+        </router-link>
+        <router-link tag="button" :to="{ name: $route.name === 'about' ? 'main' : 'about' }">
+          <img alt="About" src="../assets/info.svg" />
+        </router-link>
+      </div>
   </header>
 </template>
 
 <script>
-import axios from 'axios'
-import { throttle } from 'lodash'
-
-import SearchResults from './SearchResults'
 
 export default {
-  components: {
-    SearchResults
-  },
-  data: function () {
-    return {
-      query: '',
-      searchResults: []
-    }
-  },
-  methods: {
-    throttledSearch: throttle(async function (query) {
-      if (query.length <= 2) {
-        this.searchResults = []
-        return
-      }
-
-      const url = `https://semia-api.glitch.me/search?q=${query}`
-      const response = await axios.get(url)
-      const results = response.data
-
-      this.searchResults = results
-    }, 500)
-  },
-  watch: {
-    query: function (query) {
-      this.throttledSearch(query)
-    }
-  }
 }
 </script>
 
 <style scoped>
 header {
   width: 100%;
-  position: absolute;
-  z-index: 1001;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  padding: 10px;
   box-sizing: border-box;
-  /* pointer-events: none; */
+  /* background-color: #e2e2e2; */
+  background-color: rgb(255, 217, 0);
+  flex-shrink: 0;
 }
 
-.container {
-  position: relative;
-  background-color: black;
+.heading {
+  display: flex;
 }
 
-h1 {
-  pointer-events: all;
+.narrow-h1 {
+  display: none;
+}
+
+header h1, header h2 {
+  display: inline;
   margin: 0;
   padding: 0;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
+  line-height: 1em;
 }
 
-h1 .text {
-  padding: 0 10px;
+header, header a {
+  /* color: #6d6d6d; */
+  color: black;
+  text-decoration: none;
 }
 
-.color {
-  height: 1em;
-  width: 1em;
-  display: inline-block;
+header h1 {
+  font-size: 24px;
+}
+
+header h2 {
+  margin-left: 1em;
+  font-size: 12px;
+  font-style: italic;
+}
+
+@media only screen and (max-width: 768px) {
+  header {
+    padding: 5px;
+  }
+
+  header h2 {
+    display: none;
+  }
+
+  header h1 {
+    font-size: 20px;
+  }
+}
+
+@media only screen and (max-width: 420px) {
+  .wide-h1 {
+    display: none;
+  }
+
+  .narrow-h1 {
+    display: inline;
+  }
 }
 </style>

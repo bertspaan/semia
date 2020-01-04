@@ -1,10 +1,16 @@
 <template>
   <div class="modal" ref="modal"
     v-on:click="close">
-    <div class="container">
-      <router-link :to="{ name: 'main' }">
-        Close
-      </router-link>
+    <div :class="{
+      container: true,
+      shadow: true,
+      high
+    }">
+      <div class="padding close">
+        <router-link :to="{ name: 'main' }" tag="button" class="">
+          <img alt="Close" src="../assets/x-circle.svg" />
+        </router-link>
+      </div>
       <slot />
     </div>
   </div>
@@ -12,6 +18,9 @@
 <script>
 
 export default {
+  props: {
+    high: Boolean
+  },
   methods: {
     close: function (event) {
       if (event.target === this.$refs.modal) {
@@ -39,10 +48,38 @@ export default {
 }
 
 .container {
-  max-width: 600px;
+  flex-shrink: 0;
+  max-height: 100%;
+  border-radius: 2px;
+  width: 768px;
+  max-width: 100%;
   position: relative;
   z-index: 1002;
-  background-color: black;
-  padding: 10px;
+  background-color: white;
+  box-sizing: border-box;
+  color: black;
+  overflow-y: auto;
+}
+
+.high {
+  height: 100%;
+}
+
+.close {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  z-index: 9999;
+}
+
+.high .close {
+  position: sticky;
+  float: right;
+}
+
+@media only screen and (max-width: 768px) {
+  .modal {
+    padding: 3px;
+  }
 }
 </style>

@@ -1,15 +1,14 @@
 <template>
-  <div>
-    <h2>{{ data.title }}</h2>
+  <section class="video-info shadow text">
+    <ul class="header">
+      <li>Date: {{ data.date }}</li>
+      <li>Duration: {{ lengthString }}</li>
+      <li>URL: <a :href="data.url">{{data.url}}</a></li>
+    </ul>
+    <h3>{{ data.title }}</h3>
     <p>{{ data.description }}</p>
-    <div><a :href="data.url">Open on Open Beelden</a></div>
-    <div class="numbers">
-      <span>{{ data.date }}</span>
-      <span>{{ lengthString }}</span>
-    </div>
     <p>{{ data.abstract }}</p>
-
-  </div>
+  </section>
 </template>
 
 <script>
@@ -29,9 +28,20 @@ export default {
 </script>
 
 <style scoped>
-.numbers {
+.video-info {
+  flex-shrink: 1;
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 2px;
+}
+
+.header {
   width: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 </style>
