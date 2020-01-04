@@ -4,7 +4,8 @@
     <div :class="{
       container: true,
       shadow: true,
-      high
+      high,
+      width
     }">
       <div class="padding close">
         <router-link :to="{ name: 'main' }" tag="button" class="">
@@ -19,7 +20,8 @@
 
 export default {
   props: {
-    high: Boolean
+    high: Boolean,
+    width: Boolean
   },
   methods: {
     close: function (event) {
@@ -51,7 +53,6 @@ export default {
   flex-shrink: 0;
   max-height: 100%;
   border-radius: 2px;
-  width: 768px;
   max-width: 100%;
   position: relative;
   z-index: 1002;
@@ -59,6 +60,10 @@ export default {
   box-sizing: border-box;
   color: black;
   overflow-y: auto;
+}
+
+.width {
+  width: 800px;
 }
 
 .high {

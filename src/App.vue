@@ -1,17 +1,17 @@
 <template>
   <div id="app">
     <Header />
-    <main>
+    <main ref="main">
       <Grid :tileUrl="config.tileUrl" :gridUrl="config.gridUrl"
         :dimensions="config.gridDimensions" />
       <transition name="modal-fade">
         <template v-if="$route.name === 'about'">
-          <Modal high>
+          <Modal high width>
             <About />
           </Modal>
         </template>
         <template v-else-if="$route.name === 'search'">
-          <Modal high>
+          <Modal high width>
             <Search :apiUrl="config.apiUrl" :thumbUrl="config.thumbUrl" />
           </Modal>
         </template>
@@ -20,6 +20,7 @@
             <Video
               :similarityAttribute.sync="similarityAttribute"
               :volume.sync="volume"
+              :maxDimensions="maxModalDimensions"
               :playing.sync="playing"
               :apiUrl="config.apiUrl" :thumbUrl="config.thumbUrl"
               :videoId="parseInt($route.params.videoId)"
@@ -66,10 +67,16 @@ export default {
       searchQuery: '',
       playing: false,
       similarityAttribute: 'colour',
-      volume: 1
+      volume: 1,
+      maxModalDimensions: [0, 0]
     }
   },
   methods: {
+    windowResize: function () {
+      const width = this.$refs.main.offsetWidth
+      const height = this.$refs.main.offsetHeight
+      this.maxModalDimensions = [width - 6, height - 6]
+    },
     keyDown: function (event) {
       if (event.key === ' ') {
         this.playing = !this.playing
@@ -80,8 +87,12 @@ export default {
       }
     }
   },
+  mounted: function () {
+    this.windowResize()
+  },
   created: function () {
     window.addEventListener('keydown', this.keyDown)
+    window.addEventListener('resize', this.windowResize)
   },
   beforeDestroy: function () {
     window.removeEventListener('keydown', this.keyDown)

@@ -4,17 +4,13 @@
     class="video-container">
     <video @timeupdate="videoTimeUpdate"
       @loadeddata="videoLoadedData"
+      :style="{
+        width: width || `${Math.min(maxDimensions[0], preferedWidth)}px`,
+        height
+      }"
       ref="video" @click="$emit('update:playing', !playing)">
       <source type="video/mp4" :src="initialVideoUrl" />
     </video>
-
-    <div class="overlay controls-centered padding play">
-      <transition name="play-fade">
-        <button title="Play video" v-if="!playing" @click="$emit('update:playing', true)">
-          <img src="../assets/play-circle.svg" />
-        </button>
-      </transition>
-    </div>
 
     <div class="overlay controls-bottom padding">
       <div class="space-between margin-bottom">
@@ -46,19 +42,27 @@
         :videoLength="videoLength" :currentTime="currentTime" />
     </div>
 
-      <div class="overlay controls-top padding">
+    <div class="overlay controls-top padding">
       <div class="heading spacing">
         <button @click="showInfo = !showInfo" title="Show video metadata">
           <img src="../assets/info.svg" />
         </button>
         <h3 class="ellipsis" :title="videoData.title">{{ videoData.title }}</h3>
       </div>
-        <VideoInfo v-if="showInfo && videoData"
-          :data="videoData" class="no-overlay" />
+      <VideoInfo v-if="showInfo && videoData"
+        :data="videoData" class="no-overlay" />
+    </div>
+
+    <div class="overlay controls-centered padding play">
+      <transition name="play-fade">
+        <button title="Play video" v-if="!playing" @click="$emit('update:playing', true)">
+          <img src="../assets/play-circle.svg" />
+        </button>
+      </transition>
     </div>
   </div>
   <div v-else class="padding centered">
-    <Loading class="loading" />
+    <Loading />
   </div>
 </template>
 
@@ -84,16 +88,22 @@ export default {
     shotId: Number,
     playing: Boolean,
     volume: Number,
-    similarityAttribute: String
+    similarityAttribute: String,
+    maxDimensions: Array
   },
   data: function () {
     return {
+      videoLoaded: false,
       videoData: undefined,
       showInfo: false,
       videoUrl: undefined,
       initialVideoUrl: undefined,
       currentTime: undefined,
-      videoLength: undefined
+      videoLength: undefined,
+      videoDimensions: undefined,
+      preferedWidth: 800,
+      width: undefined,
+      height: undefined
     }
   },
   watch: {
@@ -101,7 +111,14 @@ export default {
       this.setPlaying(this.playing)
     },
     videoId: async function () {
+      this.videoLoaded = false
+      this.width = undefined
+      this.height = undefined
+
       this.loadVideo()
+    },
+    maxDimensions: function () {
+      this.setDimensions()
     },
     shotId: function (shotId) {
       if (this.videoDataInvalid()) {
@@ -177,7 +194,50 @@ export default {
     }
   },
   methods: {
+    setDimensions: function () {
+      if (this.videoLoaded) {
+        const videoAspect = this.aspectRatio(this.videoDimensions)
+        const modalAspect = this.aspectRatio(this.maxDimensions)
+
+        let dimensions
+        if (modalAspect > videoAspect) {
+          dimensions = [
+            this.videoDimensions[0] * this.maxDimensions[1] / this.videoDimensions[1],
+            this.maxDimensions[1]
+          ]
+        } else {
+          dimensions = [
+            this.maxDimensions[0],
+            this.videoDimensions[1] * this.maxDimensions[0] / this.videoDimensions[0]
+          ]
+        }
+
+        const preferedHeight = 1 / this.aspectRatio(dimensions) * this.preferedWidth
+        if (dimensions[0] < this.preferedWidth) {
+          this.width = `${dimensions[0]}px`
+          } else if (dimensions[1] < preferedHeight) {
+          this.height = `${dimensions[1]}px`
+        } else {
+          this.width = `${this.preferedWidth}px`
+        }
+      }
+    },
+    aspectRatio: function (dimensions) {
+      return dimensions[0] / dimensions[1]
+    },
     videoLoadedData: function () {
+      const video = this.$refs.video
+
+      if (video) {
+        this.videoLoaded = true
+        this.videoDimensions = [
+          video.videoWidth,
+          video.videoHeight
+        ]
+
+        this.setDimensions()
+      }
+
       this.setPlaying(this.playing)
       this.setVolume(this.volume)
     },
@@ -351,6 +411,7 @@ h3 {
 
 .play button {
   transform: scale(3);
+  z-index: 9999;
 }
 
 .play-fade-enter-active, .play-fade-leave-active {
@@ -386,9 +447,5 @@ video {
   position: absolute;
   width: 100%;
   bottom: 0;
-}
-
-.loading {
-  height: 432px;
 }
 </style>
