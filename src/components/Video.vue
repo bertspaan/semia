@@ -213,12 +213,12 @@ export default {
         }
 
         const preferedHeight = 1 / this.aspectRatio(dimensions) * this.preferedWidth
-        if (dimensions[0] < this.preferedWidth) {
+        if (dimensions[0] < this.preferedWidth || dimensions[1] < preferedHeight) {
           this.width = `${dimensions[0]}px`
-          } else if (dimensions[1] < preferedHeight) {
           this.height = `${dimensions[1]}px`
         } else {
           this.width = `${this.preferedWidth}px`
+          this.height = `${this.preferedHeight}px`
         }
       }
     },
