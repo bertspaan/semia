@@ -42,6 +42,7 @@ import ShotTile from './ShotTile'
 import { lengthString } from '../functions'
 
 import axios from 'axios'
+const CancelToken = axios.CancelToken
 import { throttle } from 'lodash'
 
 export default {
@@ -58,7 +59,8 @@ export default {
       query: this.$route.query.query || '',
       searchResults: [],
       loading: false,
-      minQueryLength: 2
+      minQueryLength: 2,
+      source: CancelToken.source()
     }
   },
   mounted: function () {
@@ -74,6 +76,14 @@ export default {
       this.search(query)
     }, 500),
     search: async function (query) {
+      if (this.loading) {
+        this.source.cancel()
+      }
+
+      if (query.length < this.minQueryLength) {
+        return
+      }
+
       if (query && query.length > 0 && this.$route.query.query !== query) {
         this.$router.push({
           name: 'search',
@@ -83,21 +93,18 @@ export default {
         })
       }
 
-      if (query.length < this.minQueryLength) {
-        return
-      }
-
-      if (this.searchResults.length === 0) {
-        this.loading = true
-      }
-
+      this.loading = true
       const url = `${this.$props.apiUrl}/search?q=${query}`
 
-      const response = await axios.get(url)
-      this.loading = false
-      const results = response.data
-
-      this.searchResults = results
+      try {
+        const response = await axios.get(url, {
+          cancelToken: this.source.token
+        })
+        const results = response.data
+        this.searchResults = results
+      } finally {
+        this.loading = false
+      }
     },
     lengthString: function (length) {
       return lengthString(length)
