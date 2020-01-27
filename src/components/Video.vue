@@ -47,10 +47,12 @@
         <button @click="showInfo = !showInfo" title="Show video metadata">
           <img src="../assets/info.svg" />
         </button>
-        <h3 class="ellipsis" :title="videoData.title">{{ videoData.title }}</h3>
+        <h3 class="no-overlay pointer ellipsis" @click="showInfo = !showInfo" :title="videoData.title">{{ videoData.title }}</h3>
       </div>
-      <VideoInfo v-if="showInfo && videoData"
-        :data="videoData" class="no-overlay" />
+      <transition name="modal-fade">
+        <VideoInfo v-if="showInfo && videoData"
+          :data="videoData" class="no-overlay" />
+      </transition>
     </div>
 
     <div class="overlay controls-centered padding play">

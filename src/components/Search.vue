@@ -4,11 +4,11 @@
       @focus="search(query)" v-model="query"  />
 
     <div v-if="query.length === 0">
-      Type search query search videos from <a href="https://openbeelden.nl/">Open Beelden</a>.
+      Type a search query to search videos from <a href="https://openbeelden.nl/">Open Beelden</a>.
     </div>
 
     <div v-else-if="query.length < minQueryLength">
-      Search query has to be at least {{ minQueryLength }} characters long.
+      The search query has to be at least {{ minQueryLength }} characters long.
     </div>
 
     <div v-else-if="!loading && searchResults.length === 0">
@@ -42,7 +42,7 @@ import ShotTile from './ShotTile'
 import { lengthString } from '../functions'
 
 import axios from 'axios'
-const CancelToken = axios.CancelToken
+// const CancelToken = axios.CancelToken
 import { throttle } from 'lodash'
 
 export default {
@@ -60,7 +60,7 @@ export default {
       searchResults: [],
       loading: false,
       minQueryLength: 2,
-      source: CancelToken.source()
+      cancel: undefined
     }
   },
   mounted: function () {
@@ -76,10 +76,6 @@ export default {
       this.search(query)
     }, 500),
     search: async function (query) {
-      if (this.loading) {
-        this.source.cancel()
-      }
-
       if (query.length < this.minQueryLength) {
         return
       }
@@ -97,13 +93,24 @@ export default {
       const url = `${this.$props.apiUrl}/search?q=${query}`
 
       try {
+        if (this.cancel) {
+          this.cancel.cancel()
+        }
+
+        this.cancel = axios.CancelToken.source()
+
         const response = await axios.get(url, {
-          cancelToken: this.source.token
+          cancelToken: this.cancel.token
         })
         const results = response.data
+
         this.searchResults = results
-      } finally {
         this.loading = false
+      } catch (err) {
+        if (!axios.isCancel(err)) {
+          console.error(err)
+          this.loading = false
+        }
       }
     },
     lengthString: function (length) {

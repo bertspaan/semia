@@ -10,8 +10,8 @@
           </router-link>
         </h1>
         <h2>
-          Boosting Creative Reuse for <br />
-          Artistic Practice and Research
+          A visualization of 103,273 <br />
+          shots from <a href="https://openbeelden.nl/">Open Images</a>
         </h2>
       </div>
       <div class="buttons">
@@ -39,7 +39,6 @@ header {
   align-items: center;
   flex-direction: row;
   box-sizing: border-box;
-  /* background-color: #e2e2e2; */
   background-color: rgb(255, 217, 0);
   flex-shrink: 0;
 }
@@ -60,7 +59,6 @@ header h1, header h2 {
 }
 
 header, header a {
-  /* color: #6d6d6d; */
   color: black;
   text-decoration: none;
 }
@@ -75,21 +73,19 @@ header h2 {
   font-style: italic;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 680px) {
   header {
     padding: 5px;
   }
 
   header h2 {
-    display: none;
+    font-size: 10px;
   }
 
   header h1 {
     font-size: 20px;
   }
-}
 
-@media only screen and (max-width: 420px) {
   .wide-h1 {
     display: none;
   }

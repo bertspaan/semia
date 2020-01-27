@@ -3,6 +3,7 @@
     <Header />
     <main ref="main">
       <Grid :tileUrl="config.tileUrl" :gridUrl="config.gridUrl"
+        @click="hideIntro" @move="hideIntro"
         :dimensions="config.gridDimensions" />
       <transition name="modal-fade">
         <template v-if="$route.name === 'about'">
@@ -27,6 +28,9 @@
               :shotId="parseInt($route.params.shotId || 0)" />
           </Modal>
         </template>
+        <template v-else-if="showIntro">
+          <Intro />
+        </template>
       </transition>
     </main>
   </div>
@@ -39,6 +43,7 @@ import Modal from './components/Modal'
 import Video from './components/Video'
 import Search from './components/Search'
 import About from './components/About'
+import Intro from './components/Intro'
 
 const config = {
   tileUrl: process.env.VUE_APP_TILE_URL,
@@ -59,7 +64,8 @@ export default {
     Video,
     Modal,
     Search,
-    About
+    About,
+    Intro
   },
   data: function () {
     return {
@@ -68,7 +74,8 @@ export default {
       playing: false,
       similarityAttribute: 'colour',
       volume: 1,
-      maxModalDimensions: [0, 0]
+      maxModalDimensions: [0, 0],
+      showIntro: true
     }
   },
   methods: {
@@ -76,6 +83,9 @@ export default {
       const width = this.$refs.main.offsetWidth
       const height = this.$refs.main.offsetHeight
       this.maxModalDimensions = [width - 6, height - 6]
+    },
+    hideIntro: function () {
+      this.showIntro = false
     },
     keyDown: function (event) {
       if (event.key === ' ') {
@@ -128,6 +138,12 @@ body, button, input {
   color: black;
 }
 
+img.icon {
+  position: relative;
+  bottom: -2px;
+  width: 1em;
+}
+
 #app {
   width: 100%;
   height: 100%;
@@ -141,7 +157,7 @@ main {
 }
 
 .modal-fade-enter-active, .modal-fade-leave-active {
-  transition: opacity .1s;
+  transition: opacity .2s;
 }
 
 .modal-fade-enter, .modal-fade-leave-to {
@@ -189,6 +205,10 @@ button {
   justify-content: center;
 }
 
+button, .pointer {
+  cursor: pointer;
+}
+
 button:hover {
   background: rgba(255, 255, 255, 0.9);
 }
@@ -196,5 +216,37 @@ button:hover {
 button img {
   width: 24px;
   height: 24px;
+}
+
+.shots {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  height: 12px;
+  background-color: rgba(255, 217, 0, 0.2);
+  border-radius: 3px;
+}
+
+.shots li {
+  padding: 0;
+  margin: 0;
+  border-color: rgba(0, 0, 0, 0.8);
+  border-width: 1px;
+  border-left-style: solid;
+  box-sizing: border-box;
+}
+
+.shots li:last-child {
+  border-right-style: solid;
+}
+
+.shots li:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.shot-position {
+  height: 100%;
+  background-color: rgb(255, 217, 0);
 }
 </style>

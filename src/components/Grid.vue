@@ -9,8 +9,6 @@
 import OpenSeadragon from 'openseadragon'
 import axios from 'axios'
 
-// https://openseadragon.github.io/docs/OpenSeadragon.Viewport.html#panTo
-
 const gestureSettings = {
   clickToZoom: false
 }
@@ -41,7 +39,12 @@ export default {
       const response = await axios.get(this.gridUrl)
       this.grid = response.data
     },
+    move: function () {
+      this.$emit('move')
+    },
     click: function (event) {
+      this.$emit('click')
+
       if (!this.grid || !event.quick) {
         return
       }
@@ -75,6 +78,10 @@ export default {
     })
 
     viewer.addHandler('canvas-click', this.click)
+
+    viewer.addHandler('canvas-drag', this.move)
+    viewer.addHandler('canvas-scroll', this.move)
+    viewer.addHandler('canvas-pinch', this.move)
 
     this.viewer = viewer
   }

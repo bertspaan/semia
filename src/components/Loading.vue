@@ -7,12 +7,27 @@
       <div></div>
     </div>
     <div>Loading data from server.</div>
-    <div>This can take a few seconds.</div>
+    <div v-if="long">This can take <del>a few</del> many seconds.</div>
+    <div v-else>This can take a few seconds.</div>
   </div>
 </template>
 <script>
 export default {
-
+  data: function () {
+    return {
+      longLoading: 4000,
+      long: false,
+      timeout: undefined
+    }
+  },
+  mounted: function () {
+    this.timeout = window.setTimeout(() => {
+      this.long = true
+    }, this.longLoading)
+  },
+  beforeDestroy: function () {
+    clearTimeout(this.timeout)
+  }
 }
 </script>
 
