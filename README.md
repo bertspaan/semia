@@ -14,11 +14,11 @@ First, install Node.js and npm and clone this repository.
 
 Then, install the dependencies:
 
-        npm install
+    npm install
 
 Run the development server:
 
-        npm run serve
+    npm run serve
 
 Now, you can access the app on http://localhost:8080/.
 
@@ -26,8 +26,6 @@ See [`.env`](.env) for configuration options and URLs..
 
 ## Data
 
-[OpenSeadragon](https://openseadragon.github.io/) is used to show a zoomable grid of video shots clustered by similar color. From this grid, an 2D index is created so the app knows what shot is clicked when the user clicks on the Openseadragon canvas.
+[OpenSeadragon](https://openseadragon.github.io/) is used to show a zoomable grid of video shots clustered by similar color. From this grid, an 2D index is created so the app knows what shot is clicked when the user clicks on the OpenSeadragon canvas. And a search index and video metadata is accessed from a simple JSON API, hosted on [Glitch](https://glitch.com/edit/#!/semia-api). The source code of this API is available on Glitch and on [GitHub](https://github.com/bertspaan/semia-api).
 
-Scripts and files needed to generate this grid are available in the [`semia-data`](https://github.com/bertspaan/semia-data) GitHub repository.
-
-A search index and video metadata is accessed from a simple JSON API, hosted on [Glitch](https://glitch.com/edit/#!/semia-api). The source code of this API is available on Glitch and on [GitHub](https://github.com/bertspaan/semia-api).
+__All scripts and files needed to generate this grid and to run the app and API are available in https://github.com/bertspaan/semia-data.__
