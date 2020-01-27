@@ -2,7 +2,7 @@
   <div class="intro padding">
     <div class="container shadow">
       <div class="text">
-        This is visualization of 103,273 shots from 6,969 open license videos, sorted by color. Move around and zoom to explore the visualization, or click any shot to start watching videos. See the <img class="icon" alt="About" src="../assets/info.svg" /> <router-link :to="{name: 'about'}">About</router-link> page for more information about this project.
+        This is a visualization and exploration of 103,273 shots from 6,969 open license videos, sorted by color. Move around and zoom to explore the visualization, or click any shot to start watching. See the <img class="icon" alt="About" src="../assets/info.svg" /> <router-link :to="{name: 'about'}">About</router-link> page for more information about this project.
       </div>
     </div>
   </div>
