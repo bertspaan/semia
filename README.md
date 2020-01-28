@@ -35,7 +35,7 @@ Run the development server:
 
 Now, you can access the app on http://localhost:8080/.
 
-See [`.env`](.env) for configuration options and URLs..
+See [`.env`](.env) for configuration options and URLs.
 
 ## How does it work?
 
