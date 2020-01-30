@@ -6,9 +6,12 @@
       <div></div>
       <div></div>
     </div>
-    <div>Loading data from server.</div>
-    <div v-if="long">This can take <del>a few</del> many seconds.</div>
-    <div v-else>This can take a few seconds.</div>
+    <div class="text">
+      <div>Loading data from server.</div>
+      <div v-if="longer">This can take <del>a few</del> many seconds, the <a href="https://glitch.com/edit/#!/semia-api">API server on Glitch</a> is waking up.</div>
+      <div v-else-if="long">This can take <del>a few</del> many seconds.</div>
+      <div v-else>This can take a few seconds.</div>
+    </div>
   </div>
 </template>
 <script>
@@ -16,17 +19,24 @@ export default {
   data: function () {
     return {
       longLoading: 4000,
+      longer: false,
       long: false,
-      timeout: undefined
+      timeoutLong: undefined,
+      timeoutLonger: undefined
     }
   },
   mounted: function () {
-    this.timeout = window.setTimeout(() => {
+    this.timeoutLong = window.setTimeout(() => {
       this.long = true
     }, this.longLoading)
+
+    this.timeoutLonger = window.setTimeout(() => {
+      this.longer = true
+    }, this.longLoading * 2)
   },
   beforeDestroy: function () {
-    clearTimeout(this.timeout)
+    clearTimeout(this.timeoutLong)
+    clearTimeout(this.timeoutLonger)
   }
 }
 </script>
